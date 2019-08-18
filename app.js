@@ -8,7 +8,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use("/feed", feedRoutes);
-app.user("/auth", authRoutes);
+app.use("/auth", authRoutes);
 // eslint-disable-next-line no-unused-vars
 app.use((error, req, res, next) => {
   return res
