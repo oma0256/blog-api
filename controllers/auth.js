@@ -24,7 +24,7 @@ exports.signup = (req, res, next) => {
       new User(userData).save().then(user => {
         return res
           .status(201)
-          .json({ message: messages.userRegistered, userId: user._id }); // eslint-disable-line no-underscore-dangle
+          .json({ message: messages.userRegistered, userId: user._id });
       });
     })
     .catch(err => next(err));
@@ -39,7 +39,7 @@ exports.signin = (req, res) => {
     throw error;
   }
   const {
-    user: { password, ...userData } // eslint-disable-line no-unused-vars
+    user: { password, ...userData }
   } = req;
   const token = generateToken(userData);
   return res
