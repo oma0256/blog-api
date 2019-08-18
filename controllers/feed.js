@@ -2,6 +2,13 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 exports.createPost = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("Failed to create post, please check the inputs");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
   const {
     body,
     file: { path },
@@ -13,15 +20,6 @@ exports.createPost = (req, res, next) => {
   new Post(postData)
     .save()
     .then(post => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const error = new Error(
-          "Failed to create post, please check the inputs"
-        );
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-      }
       createdPost = post;
       user.posts.push(post);
       return user.save();

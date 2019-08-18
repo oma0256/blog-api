@@ -2,11 +2,13 @@ const { validationResult } = require("express-validator");
 const bycrpt = require("bcrypt");
 const User = require("../models/users");
 const { generateToken } = require("../utils/jwt");
+const { invalidInputs } = require("../messages/index");
+const messages = require("../messages/controllers/auth");
 
 exports.signup = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new Error("Registration failed, please check the fields");
+    const error = new Error(invalidInputs);
     error.statusCode = 422;
     error.data = errors.array();
     throw error;
@@ -22,7 +24,7 @@ exports.signup = (req, res, next) => {
       new User(userData).save().then(user => {
         return res
           .status(201)
-          .json({ message: "User registered successfully", userId: user._id }); // eslint-disable-line no-underscore-dangle
+          .json({ message: messages.userRegistered, userId: user._id }); // eslint-disable-line no-underscore-dangle
       });
     })
     .catch(err => next(err));
@@ -31,15 +33,16 @@ exports.signup = (req, res, next) => {
 exports.signin = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new Error("Login failed, please check the fields");
+    const error = new Error(invalidInputs);
     error.statusCode = 422;
     error.data = errors.array();
     throw error;
   }
-  const { user } = req;
-  delete user.password;
-  const token = generateToken(user);
+  const {
+    user: { password, ...userData } // eslint-disable-line no-unused-vars
+  } = req;
+  const token = generateToken(userData);
   return res
     .status(200)
-    .json({ message: "Loggedin successfully", token, user });
+    .json({ message: messages.userLoggedIn, token, user: userData._doc });
 };

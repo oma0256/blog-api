@@ -11,9 +11,10 @@ app.use("/feed", feedRoutes);
 app.use("/auth", authRoutes);
 // eslint-disable-next-line no-unused-vars
 app.use((error, req, res, next) => {
+  console.log(error);
   return res
-    .status(error.status || 500)
-    .json({ message: error.message, data: error.data });
+    .status(error.statusCode || 500)
+    .json({ message: error.message, errors: error.data });
 });
 
 mongoose

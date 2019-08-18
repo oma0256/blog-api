@@ -1,42 +1,60 @@
 const { body } = require("express-validator");
 const bcrypt = require("bcrypt");
 const User = require("../models/users");
+const messages = require("../messages/validators/auth");
 
 const authValidators = [
   body("email")
+    .exists()
+    .withMessage(messages.emailRequired)
     .trim()
     .isEmail()
-    .withMessage("Please provide a valid email address.")
-    .normalizeEmail()
+    .withMessage(messages.invalidEmail)
+    .normalizeEmail(),
+  body("password")
+    .exists()
+    .withMessage(messages.passwordRequired)
+    .trim()
 ];
 
 exports.signupValidators = [
   ...authValidators,
   body("email").custom(email => {
-    User.findOne({ email }).then(user => {
+    return User.findOne({ email }).then(user => {
       if (user) {
-        throw new Error("User exists with this email address");
+        throw new Error(messages.duplicateUser);
       }
       return true;
     });
-  })
+  }),
+  body("password")
+    .isLength({ min: 5 })
+    .withMessage(messages.shortPassword),
+  body("username")
+    .exists()
+    .withMessage(messages.usernameRequired)
+    .trim()
+    .isLength({ min: 3, max: 10 })
+    .withMessage(messages.usernameLength)
+    .isAlphanumeric()
+    .withMessage(messages.alphanumericUsername)
 ];
 
 exports.loginValidators = [
   ...authValidators,
   body("email").custom((email, { req }) => {
     let loginUser;
-    User.findOne({ email })
+    return User.findOne({ email })
       .then(user => {
         if (!user) {
-          throw new Error("User with this email is not registered");
+          throw new Error(messages.invalidCredentials);
         }
         loginUser = user;
         return bcrypt.compare(req.body.password, user.password);
       })
       .then(passwordsMatch => {
         if (!passwordsMatch) {
-          throw new Error("Invalid credentials");
+          throw new Error(messages.invalidCredentials);
         }
         req.user = loginUser;
         return true;
