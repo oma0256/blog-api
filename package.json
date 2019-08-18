@@ -1,0 +1,32 @@
+{
+  "name": "blog-api",
+  "version": "1.0.0",
+  "description": "Simple blog api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oma0256/blog-api.git"
+  },
+  "author": "oma0256",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oma0256/blog-api/issues"
+  },
+  "homepage": "https://github.com/oma0256/blog-api#readme",
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-node": "^4.0.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "prettier": "^1.18.2"
+  }
+}
