@@ -15,10 +15,10 @@ exports.decodeToken = token => {
   }
 };
 
-exports.checkUserIsAuthenticated = (res, req, next) => {
+exports.checkUserIsAuthenticated = (req, res, next) => {
   const authHeader = req.get("Authorization");
   if (!authHeader) {
-    const error = new Error("User unauthenticated");
+    const error = new Error("Please provide authorization headers");
     error.statusCode = 401;
     throw error;
   }

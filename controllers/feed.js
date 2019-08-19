@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const User = require("../models/users");
 
 exports.createPost = (req, res, next) => {
   const errors = validationResult(req);
@@ -12,17 +13,19 @@ exports.createPost = (req, res, next) => {
   const {
     body,
     file: { path },
-    user: { _id },
-    user
+    user: { _id }
   } = req;
-  const postData = { ...body, image: path, creator: _id };
+  const postData = { ...body, imageUrl: path, creator: _id };
   let createdPost;
   new Post(postData)
     .save()
     .then(post => {
       createdPost = post;
-      user.posts.push(post);
-      return user.save();
+      return User.findById(_id);
+    })
+    .then(creator => {
+      creator.posts.push(createdPost);
+      return creator.save();
     })
     .then(creator => {
       return res.status(201).json({
@@ -36,19 +39,24 @@ exports.createPost = (req, res, next) => {
 
 exports.retrievePosts = (req, res, next) => {
   const currentPage = req.query.page;
-  const postsPerPage = 2;
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  Post.find()
-    .then(posts => {
-      const paginatedPosts = posts.slice(start, end);
-      return res.status(200).json({
-        message: "Posts returned successfully",
-        posts: paginatedPosts,
-        totalItems: posts.length
-      });
-    })
-    .catch(err => next(err));
+  if (currentPage) {
+    const postsPerPage = 2;
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    return Post.find()
+      .then(posts => {
+        const paginatedPosts = posts.slice(start, end);
+        return res.status(200).json({
+          message: "Posts returned successfully",
+          posts: paginatedPosts,
+          totalItems: posts.length
+        });
+      })
+      .catch(err => next(err));
+  }
+  return Post.find().then(posts =>
+    res.status(200).json({ message: "Posts returned successfully", posts })
+  );
 };
 
 exports.retrievePost = (req, res, next) => {
@@ -82,7 +90,6 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
-      // eslint-disable-next-line no-underscore-dangle
       if (post.creator.toString() !== user._id.toString()) {
         const error = new Error("You are not the creator of this post");
         error.statusCode = 403;
@@ -107,7 +114,6 @@ exports.deletePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
-      // eslint-disable-next-line no-underscore-dangle
       if (post.creator.toString() !== user._id.toString()) {
         const error = new Error("You are not the creator of this post");
         error.statusCode = 403;

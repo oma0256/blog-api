@@ -38,11 +38,11 @@ exports.signin = (req, res) => {
     error.data = errors.array();
     throw error;
   }
-  const {
-    user: { password, ...userData }
-  } = req;
-  const token = generateToken(userData);
+  const { user } = req;
+  const updatedUser = user.toObject();
+  delete updatedUser.password;
+  const token = generateToken(updatedUser);
   return res
     .status(200)
-    .json({ message: messages.userLoggedIn, token, user: userData._doc });
+    .json({ message: messages.userLoggedIn, token, user: updatedUser });
 };
