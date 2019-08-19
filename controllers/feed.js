@@ -1,4 +1,7 @@
 const { validationResult } = require("express-validator");
+const {
+  Types: { ObjectId }
+} = require("mongoose");
 const Post = require("../models/post");
 const User = require("../models/users");
 
@@ -63,7 +66,7 @@ exports.retrievePost = (req, res, next) => {
   const {
     params: { postId }
   } = req;
-  Post.findById(postId)
+  Post.findById(ObjectId(postId))
     .then(post => {
       if (!post) {
         const error = new Error("Post not found");
@@ -81,16 +84,22 @@ exports.updatePost = (req, res, next) => {
   const {
     params: { postId },
     body,
-    user
+    user: { _id }
   } = req;
-  Post.findOneAndUpdate({ _id: postId }, body, { new: true })
+  if (req.file) {
+    body.imageUrl = req.file.path;
+  }
+  Post.findByIdAndUpdate(ObjectId(postId), body, {
+    new: true,
+    runValidators: true
+  })
     .then(post => {
       if (!post) {
         const error = new Error("Post doesn't exist");
         error.statusCode = 404;
         throw error;
       }
-      if (post.creator.toString() !== user._id.toString()) {
+      if (post.creator.toString() !== _id.toString()) {
         const error = new Error("You are not the creator of this post");
         error.statusCode = 403;
         throw error;
@@ -105,16 +114,16 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   const {
     params: { postId },
-    user
+    user: { _id }
   } = req;
-  Post.findOneAndDelete({ _id: postId })
+  Post.findByIdAndDelete(postId, { runValidators: true })
     .then(post => {
       if (!post) {
         const error = new Error("Post doesn't exist");
         error.statusCode = 404;
         throw error;
       }
-      if (post.creator.toString() !== user._id.toString()) {
+      if (post.creator.toString() !== _id.toString()) {
         const error = new Error("You are not the creator of this post");
         error.statusCode = 403;
         throw error;
